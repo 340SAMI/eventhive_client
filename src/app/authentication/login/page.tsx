@@ -2,14 +2,35 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Better Auth sign-in call goes here later
+    const { data, error } = await authClient.signIn.email({
+      email,
+      password,
+      rememberMe: true,
+    });
+
+    if (error) {
+      toast.error(error.message ?? "Login failed. Check your credentials.");
+      return;
+    }
+
+    toast.success(`Welcome back, ${data?.user?.name ?? "there"}!`);
+
+    setTimeout(() => {
+      router.push("/");
+    }, 1500);
+  
+
     console.log({ email, password });
   };
 
@@ -64,7 +85,7 @@ export default function LoginPage() {
 
         <p className="mt-6 text-center text-sm text-muted">
           Don&apos;t have an account?{" "}
-          <Link href="/register" className="text-accent hover:text-accent-hover">
+          <Link href="/authentication/signup" className="text-accent hover:text-accent-hover">
             Register
           </Link>
         </p>
