@@ -14,11 +14,10 @@ interface NavLink {
 const publicNavLinks: NavLink[] = [
   { href: "/events", label: "Explore" },
   { href: "/blogs", label: "Blogs" },
-  { href: "/fund", label: "Donate" },
 ];
 
 const privateNavlinks: NavLink[] =[
-  { href: "/listings", label: "MyListings" },
+  { href: "/userlistings", label: "MyListings" },
   { href: "/add", label: "AddListings" }
 ];
 

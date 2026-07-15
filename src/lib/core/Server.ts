@@ -40,3 +40,31 @@ export const ProtectedMutation = async (
  
   return json;
 };
+
+
+export const publicFetch = async (path: string) => {
+    const res = await fetch(`${baseUrl}${path}`);
+
+    if (!res.ok) {
+        throw new Error(`Failed to fetch ${path}: ${res.status}`);
+    }
+
+    return res.json();
+};
+
+
+
+export const protectedFetch = async (path:string) => {
+    const res = await fetch(`${baseUrl}${path}`,
+        {
+            headers: await authHeader()
+        }
+    );
+
+    if (!res.ok) {
+    throw new Error(`Failed to fetch ${path}: ${res.status}`);
+    
+    }
+
+    return res.json();
+}
