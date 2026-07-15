@@ -1,21 +1,42 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { toast } from "react-toastify";
+import { authClient } from "@/lib/auth-client";
 
 interface NavLink {
   href: string;
   label: string;
 }
 
-const navLinks: NavLink[] = [
+const publicNavLinks: NavLink[] = [
   { href: "/events", label: "Explore" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/blogs", label: "Blogs" },
+  { href: "/fund", label: "Donate" },
+];
+
+const privateNavlinks: NavLink[] =[
+  { href: "/listings", label: "MyListings" },
+  { href: "/add", label: "AddListings" }
 ];
 
 export default function Navbar() {
+  const router = useRouter();
+  const { data: session, isPending } = authClient.useSession();
   const [isOpen, setIsOpen] = useState(false);
+
+  const navLinks: NavLink[] = session
+    ? [...publicNavLinks, ...privateNavlinks]
+    : publicNavLinks;
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+    toast.success("Logged out successfully.");
+    setIsOpen(false);
+    router.push("/");
+  };
 
   return (
     <nav className="w-full bg-page px-4 py-6">
@@ -41,18 +62,36 @@ export default function Navbar() {
 
           {/* Auth cluster — hidden on mobile */}
           <div className="hidden items-center gap-4 md:flex">
-            <Link
-              href="authentication/login"
-              className="text-sm text-muted transition-colors hover:text-primary"
-            >
-              Login
-            </Link>
-            <Link
-              href="authentication/signup"
-              className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-page transition-colors hover:bg-accent-hover"
-            >
-              Register
-            </Link>
+            {isPending ? (
+              <div className="h-9 w-9 animate-pulse rounded-full bg-border" />
+            ) : session ? (
+              <>
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-page">
+                  {session.user.name?.charAt(0).toUpperCase() ?? "U"}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="text-sm text-muted transition-colors hover:text-primary"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/authentication/login"
+                  className="text-sm text-muted transition-colors hover:text-primary"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/authentication/signup"
+                  className="rounded-full bg-accent px-5 py-2 text-sm font-semibold text-page transition-colors hover:bg-accent-hover"
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Hamburger — mobile only */}
@@ -81,20 +120,32 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="my-2 border-t border-border" />
-            <Link
-              href="authentication/login"
-              onClick={() => setIsOpen(false)}
-              className="rounded-lg px-3 py-2 text-sm text-muted hover:bg-page hover:text-primary"
-            >
-              Login
-            </Link>
-            <Link
-              href="authentication/signup"
-              onClick={() => setIsOpen(false)}
-              className="rounded-full bg-accent px-3 py-2 text-center text-sm font-semibold text-page hover:bg-accent-hover"
-            >
-              Register
-            </Link>
+
+            {session ? (
+              <button
+                onClick={handleLogout}
+                className="rounded-lg px-3 py-2 text-left text-sm text-muted hover:bg-page hover:text-primary"
+              >
+                Logout
+              </button>
+            ) : (
+              <>
+                <Link
+                  href="/authentication/login"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-lg px-3 py-2 text-sm text-muted hover:bg-page hover:text-primary"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/authentication/signup"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded-full bg-accent px-3 py-2 text-center text-sm font-semibold text-page hover:bg-accent-hover"
+                >
+                  Register
+                </Link>
+              </>
+            )}
           </div>
         )}
       </div>
